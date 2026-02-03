@@ -1,0 +1,16 @@
+baseUrl: "http://localhost:4200"
+apiUrl: "http://localhost:8000/api"
+
+accounts:
+  userA:
+    username: "testuser-a"
+    email: "testuser-a@test.com"
+    password: "Test@123456"
+  userB:
+    username: "testuser-b"
+    email: "testuser-b@test.com"
+    password: "Test@123456"
+
+settings:
+  timeout: 30000
+  retries: 1
