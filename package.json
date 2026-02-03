@@ -10,6 +10,7 @@
     "test:articles": "playwright test --grep @articles",
     "test:comments": "playwright test --grep @comments",
     "test:feed": "playwright test --grep @feed",
+    "test:tags": "playwright test --grep @tags",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
