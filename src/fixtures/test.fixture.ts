@@ -5,6 +5,7 @@ import { HomePage } from '../pages/HomePage';
 import { EditorPage } from '../pages/EditorPage';
 import { ArticlePage } from '../pages/ArticlePage';
 import { ProfilePage } from '../pages/ProfilePage';
+import { SettingsPage } from '../pages/SettingsPage';
 import { loadConfig, Config } from '../config/config';
 
 type TestFixtures = {
@@ -14,6 +15,7 @@ type TestFixtures = {
   editorPage: EditorPage;
   articlePage: ArticlePage;
   profilePage: ProfilePage;
+  settingsPage: SettingsPage;
   config: Config;
 };
 
@@ -35,6 +37,9 @@ export const test = base.extend<TestFixtures>({
   },
   profilePage: async ({ page }, use) => {
     await use(new ProfilePage(page));
+  },
+  settingsPage: async ({ page }, use) => {
+    await use(new SettingsPage(page));
   },
   config: async ({}, use) => {
     await use(loadConfig());

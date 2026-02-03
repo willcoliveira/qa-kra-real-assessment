@@ -121,4 +121,46 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
       expect(errorMessage.length).toBeGreaterThan(0);
     });
   });
+
+  test.describe('Logout', () => {
+    test('should be able to logout from settings page', async ({
+      page,
+      registerPage,
+      loginPage,
+      settingsPage,
+    }) => {
+      // First, register and login a new user
+      const username = generateRandomUsername('logouttest');
+      const email = generateRandomEmail('logouttest');
+      const password = 'Test@123456';
+
+      await registerPage.navigate();
+      await registerPage.register(username, email, password);
+      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+
+      await loginPage.navigate();
+      await loginPage.login(email, password);
+      await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+
+      // Verify user is logged in
+      await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
+      await expect(page.getByRole('link', { name: username })).toBeVisible();
+
+      // Navigate to settings and click logout
+      await settingsPage.navigate();
+      await settingsPage.waitForSettingsLoaded();
+      await settingsPage.clickLogout();
+
+      // Verify user is logged out - redirected to home page
+      await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+
+      // Verify login/register links are visible (user is logged out)
+      await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Sign up' })).toBeVisible();
+
+      // Verify user-specific links are no longer visible
+      await expect(page.getByRole('link', { name: 'New Article' })).not.toBeVisible();
+      await expect(page.getByRole('link', { name: 'Settings' })).not.toBeVisible();
+    });
+  });
 });
