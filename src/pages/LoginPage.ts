@@ -1,32 +1,38 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-export class LoginPage extends BasePage {
-  private static readonly CONTAINER = '.auth-page';
+export const selectors = {
+  container: '.auth-page',
+  emailPlaceholder: 'Email',
+  passwordPlaceholder: 'Password',
+  signInButton: 'Sign in',
+  registerLink: 'Need an account?',
+};
 
+export class LoginPage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
 
   // Selectors as methods for reusability
   private emailInput(): Locator {
-    return this.getByPlaceholder('Email');
+    return this.getByPlaceholder(selectors.emailPlaceholder);
   }
 
   private passwordInput(): Locator {
-    return this.getByPlaceholder('Password');
+    return this.getByPlaceholder(selectors.passwordPlaceholder);
   }
 
   private signInButton(): Locator {
-    return this.getByRole('button', { name: 'Sign in' });
+    return this.getByRole('button', { name: selectors.signInButton });
   }
 
   private errorMessages(): Locator {
-    return this.getErrorMessages(LoginPage.CONTAINER);
+    return this.getErrorMessages(selectors.container);
   }
 
   private registerLink(): Locator {
-    return this.getByRole('link', { name: 'Need an account?' });
+    return this.getByRole('link', { name: selectors.registerLink });
   }
 
   // Actions

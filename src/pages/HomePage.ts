@@ -1,44 +1,56 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-export class HomePage extends BasePage {
-  private static readonly CONTAINER = '.home-page';
+export const selectors = {
+  container: '.home-page',
+  feedToggle: '.feed-toggle',
+  myFeedTab: 'My Feed',
+  globalFeedTab: 'Global Feed',
+  articlePreview: '.article-preview',
+  articlePreviewTitle: '.article-preview .preview-link h1',
+  previewLink: '.preview-link h1',
+  tagSidebar: '.sidebar .tag-list',
+  tagPill: '.tag-pill',
+  newArticleLink: 'New Article',
+  settingsLink: 'Settings',
+};
 
+export class HomePage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
 
   // Selectors as methods for reusability
   private feedToggle(): Locator {
-    return this.page.locator('.feed-toggle');
+    return this.page.locator(selectors.feedToggle);
   }
 
   private myFeedTab(): Locator {
-    return this.feedToggle().getByText('My Feed');
+    return this.feedToggle().getByText(selectors.myFeedTab);
   }
 
   private globalFeedTab(): Locator {
-    return this.feedToggle().getByText('Global Feed');
+    return this.feedToggle().getByText(selectors.globalFeedTab);
   }
 
   private articlePreviews(): Locator {
-    return this.page.locator('.article-preview');
+    return this.page.locator(selectors.articlePreview);
   }
 
   private articlePreviewTitles(): Locator {
-    return this.page.locator('.article-preview .preview-link h1');
+    return this.page.locator(selectors.articlePreviewTitle);
   }
 
   private tagSidebar(): Locator {
-    return this.page.locator('.sidebar .tag-list');
+    return this.page.locator(selectors.tagSidebar);
   }
 
   private newArticleLink(): Locator {
-    return this.getByRole('link', { name: 'New Article' });
+    return this.getByRole('link', { name: selectors.newArticleLink });
   }
 
   private settingsLink(): Locator {
-    return this.getByRole('link', { name: 'Settings' });
+    return this.getByRole('link', { name: selectors.settingsLink });
   }
 
   // Actions
@@ -65,7 +77,7 @@ export class HomePage extends BasePage {
   async getArticleTitles(): Promise<string[]> {
     // Wait for articles to load (either have content or show "No articles")
     await this.page
-      .locator('.article-preview h1, .article-preview:has-text("No articles")')
+      .locator(`${selectors.articlePreview} h1, ${selectors.articlePreview}:has-text("No articles")`)
       .first()
       .waitFor({ state: 'visible', timeout: 10000 })
       .catch(() => {
@@ -75,15 +87,15 @@ export class HomePage extends BasePage {
   }
 
   async clickTag(tagName: string): Promise<void> {
-    await this.tagSidebar().locator('.tag-pill', { hasText: tagName }).click();
+    await this.tagSidebar().locator(selectors.tagPill, { hasText: tagName }).click();
   }
 
   async getAvailableTags(): Promise<string[]> {
-    return this.tagSidebar().locator('.tag-pill').allTextContents();
+    return this.tagSidebar().locator(selectors.tagPill).allTextContents();
   }
 
   async clickArticleByTitle(title: string): Promise<void> {
-    await this.page.locator('.preview-link h1', { hasText: title }).click();
+    await this.page.locator(selectors.previewLink, { hasText: title }).click();
   }
 
   async clickNewArticle(): Promise<void> {
@@ -95,14 +107,14 @@ export class HomePage extends BasePage {
   }
 
   async isArticleVisibleInFeed(title: string): Promise<boolean> {
-    const article = this.page.locator('.preview-link h1', { hasText: title });
+    const article = this.page.locator(selectors.previewLink, { hasText: title });
     return article.isVisible();
   }
 
   async waitForArticlesLoaded(): Promise<void> {
     // Wait for loading state to disappear
     await this.page
-      .locator('.article-preview:has-text("Loading")')
+      .locator(`${selectors.articlePreview}:has-text("Loading")`)
       .waitFor({ state: 'hidden', timeout: 10000 })
       .catch(() => {
         // If no loading indicator found, that's fine
@@ -110,9 +122,9 @@ export class HomePage extends BasePage {
   }
 
   async getArticleTagsByTitle(title: string): Promise<string[]> {
-    const articlePreview = this.page.locator('.article-preview', {
+    const articlePreview = this.page.locator(selectors.articlePreview, {
       has: this.page.locator('h1', { hasText: title }),
     });
-    return articlePreview.locator('.tag-list .tag-pill').allTextContents();
+    return articlePreview.locator(`.tag-list ${selectors.tagPill}`).allTextContents();
   }
 }

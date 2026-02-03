@@ -1,20 +1,33 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-export class ProfilePage extends BasePage {
-  private static readonly CONTAINER = '.profile-page';
+export const selectors = {
+  container: '.profile-page',
+  userInfo: '.user-info',
+  username: 'h4',
+  userImage: '.user-img',
+  followButtonPattern: /Follow/,
+  unfollowButtonPattern: /Unfollow/,
+  editProfileButton: 'Edit Profile Settings',
+  articlesToggle: '.articles-toggle',
+  navLink: '.nav-link',
+  articlePreview: '.article-preview',
+  articlePreviewTitle: '.article-preview .preview-link h1',
+  previewLink: '.preview-link h1',
+};
 
+export class ProfilePage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
 
   // Selectors as methods for reusability
   private userInfo(): Locator {
-    return this.page.locator('.user-info');
+    return this.page.locator(selectors.userInfo);
   }
 
   private profileUsername(): Locator {
-    return this.userInfo().locator('h4');
+    return this.userInfo().locator(selectors.username);
   }
 
   private profileBio(): Locator {
@@ -22,35 +35,35 @@ export class ProfilePage extends BasePage {
   }
 
   private profileImage(): Locator {
-    return this.userInfo().locator('.user-img');
+    return this.userInfo().locator(selectors.userImage);
   }
 
   private followButton(): Locator {
-    return this.userInfo().getByRole('button', { name: /Follow/ });
+    return this.userInfo().getByRole('button', { name: selectors.followButtonPattern });
   }
 
   private unfollowButton(): Locator {
-    return this.userInfo().getByRole('button', { name: /Unfollow/ });
+    return this.userInfo().getByRole('button', { name: selectors.unfollowButtonPattern });
   }
 
   private editProfileButton(): Locator {
-    return this.getByRole('button', { name: 'Edit Profile Settings' });
+    return this.getByRole('button', { name: selectors.editProfileButton });
   }
 
   private articlesToggle(): Locator {
-    return this.page.locator('.articles-toggle');
+    return this.page.locator(selectors.articlesToggle);
   }
 
   private myArticlesTab(): Locator {
-    return this.articlesToggle().locator('.nav-link').first();
+    return this.articlesToggle().locator(selectors.navLink).first();
   }
 
   private favoritedArticlesTab(): Locator {
-    return this.articlesToggle().locator('.nav-link').last();
+    return this.articlesToggle().locator(selectors.navLink).last();
   }
 
   private articlePreviewTitles(): Locator {
-    return this.page.locator('.article-preview .preview-link h1');
+    return this.page.locator(selectors.articlePreviewTitle);
   }
 
   // Actions
@@ -101,7 +114,7 @@ export class ProfilePage extends BasePage {
   async getMyArticles(): Promise<string[]> {
     // Wait for articles to load
     await this.page
-      .locator('.article-preview:has-text("Loading")')
+      .locator(`${selectors.articlePreview}:has-text("Loading")`)
       .waitFor({ state: 'hidden', timeout: 10000 })
       .catch(() => {
         // If no loading indicator, that's fine
@@ -110,12 +123,12 @@ export class ProfilePage extends BasePage {
   }
 
   async isArticleVisible(title: string): Promise<boolean> {
-    const article = this.page.locator('.preview-link h1', { hasText: title });
+    const article = this.page.locator(selectors.previewLink, { hasText: title });
     return article.isVisible();
   }
 
   async clickArticleByTitle(title: string): Promise<void> {
-    await this.page.locator('.preview-link h1', { hasText: title }).click();
+    await this.page.locator(selectors.previewLink, { hasText: title }).click();
   }
 
   async waitForProfileLoaded(): Promise<void> {
@@ -123,7 +136,7 @@ export class ProfilePage extends BasePage {
   }
 
   async getArticleCount(): Promise<number> {
-    const previews = this.page.locator('.article-preview:has(.preview-link)');
+    const previews = this.page.locator(`${selectors.articlePreview}:has(.preview-link)`);
     return previews.count();
   }
 }

@@ -1,72 +1,92 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-export class ArticlePage extends BasePage {
-  private static readonly CONTAINER = '.article-page';
+export const selectors = {
+  container: '.article-page',
+  banner: '.banner',
+  title: 'h1',
+  articleContent: '.article-content markdown',
+  articleMeta: '.article-meta',
+  deleteButton: 'Delete Article',
+  editButton: 'Edit Article',
+  followButtonPattern: /Follow/,
+  unfollowButtonPattern: /Unfollow/,
+  favoriteButtonPattern: /Favorite Article/,
+  unfavoriteButtonPattern: /Unfavorite Article/,
+  commentPlaceholder: 'Write a comment...',
+  postCommentButton: 'Post Comment',
+  commentCard: '.card:has(.card-text)',
+  commentText: '.card-text',
+  commentDeleteIcon: '.ion-trash-a',
+  tagList: '.article-content .tag-list',
+  tagPill: '.tag-pill',
+  authorLink: '.author',
+};
 
+export class ArticlePage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
 
   // Selectors as methods for reusability
   private banner(): Locator {
-    return this.page.locator(`${ArticlePage.CONTAINER} .banner`);
+    return this.page.locator(`${selectors.container} ${selectors.banner}`);
   }
 
   private articleTitle(): Locator {
-    return this.banner().locator('h1');
+    return this.banner().locator(selectors.title);
   }
 
   private articleBody(): Locator {
-    return this.page.locator('.article-content markdown');
+    return this.page.locator(selectors.articleContent);
   }
 
   private articleMeta(): Locator {
-    return this.page.locator('.article-meta').first();
+    return this.page.locator(selectors.articleMeta).first();
   }
 
   private deleteButton(): Locator {
-    return this.getByRole('button', { name: 'Delete Article' }).first();
+    return this.getByRole('button', { name: selectors.deleteButton }).first();
   }
 
   private editButton(): Locator {
-    return this.getByText('Edit Article').first();
+    return this.getByText(selectors.editButton).first();
   }
 
   private followButton(): Locator {
-    return this.articleMeta().getByRole('button', { name: /Follow/ });
+    return this.articleMeta().getByRole('button', { name: selectors.followButtonPattern });
   }
 
   private unfollowButton(): Locator {
-    return this.articleMeta().getByRole('button', { name: /Unfollow/ });
+    return this.articleMeta().getByRole('button', { name: selectors.unfollowButtonPattern });
   }
 
   private favoriteButton(): Locator {
-    return this.getByRole('button', { name: /Favorite Article/ }).first();
+    return this.getByRole('button', { name: selectors.favoriteButtonPattern }).first();
   }
 
   private unfavoriteButton(): Locator {
-    return this.getByRole('button', { name: /Unfavorite Article/ }).first();
+    return this.getByRole('button', { name: selectors.unfavoriteButtonPattern }).first();
   }
 
   private commentTextarea(): Locator {
-    return this.getByPlaceholder('Write a comment...');
+    return this.getByPlaceholder(selectors.commentPlaceholder);
   }
 
   private postCommentButton(): Locator {
-    return this.getByRole('button', { name: 'Post Comment' });
+    return this.getByRole('button', { name: selectors.postCommentButton });
   }
 
   private commentCards(): Locator {
-    return this.page.locator('.card:has(.card-text)');
+    return this.page.locator(selectors.commentCard);
   }
 
   private tagList(): Locator {
-    return this.page.locator('.article-content .tag-list');
+    return this.page.locator(selectors.tagList);
   }
 
   private authorLink(): Locator {
-    return this.articleMeta().locator('.author');
+    return this.articleMeta().locator(selectors.authorLink);
   }
 
   // Actions
@@ -83,7 +103,7 @@ export class ArticlePage extends BasePage {
   }
 
   async getTags(): Promise<string[]> {
-    return this.tagList().locator('.tag-pill').allTextContents();
+    return this.tagList().locator(selectors.tagPill).allTextContents();
   }
 
   async clickDelete(): Promise<void> {
@@ -116,14 +136,14 @@ export class ArticlePage extends BasePage {
   }
 
   async deleteComment(index: number = 0): Promise<void> {
-    await this.commentCards().nth(index).locator('.ion-trash-a').click();
+    await this.commentCards().nth(index).locator(selectors.commentDeleteIcon).click();
   }
 
   async getComments(): Promise<string[]> {
     const count = await this.commentCards().count();
     const comments: string[] = [];
     for (let i = 0; i < count; i++) {
-      const text = await this.commentCards().nth(i).locator('.card-text').textContent();
+      const text = await this.commentCards().nth(i).locator(selectors.commentText).textContent();
       if (text) {
         comments.push(text.trim());
       }

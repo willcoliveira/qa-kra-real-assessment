@@ -1,44 +1,54 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
-export class EditorPage extends BasePage {
-  private static readonly CONTAINER = '.editor-page';
+export const selectors = {
+  container: '.editor-page',
+  titlePlaceholder: 'Article Title',
+  descriptionPlaceholder: "What's this article about?",
+  bodyPlaceholder: 'Write your article (in markdown)',
+  tagPlaceholder: 'Enter tags',
+  publishButton: 'Publish Article',
+  tagList: '.tag-list',
+  tagPill: '.tag-pill',
+  tagPillClose: '.ion-close-round',
+};
 
+export class EditorPage extends BasePage {
   constructor(page: Page) {
     super(page);
   }
 
   // Selectors as methods for reusability
   private titleInput(): Locator {
-    return this.getByPlaceholder('Article Title');
+    return this.getByPlaceholder(selectors.titlePlaceholder);
   }
 
   private descriptionInput(): Locator {
-    return this.getByPlaceholder("What's this article about?");
+    return this.getByPlaceholder(selectors.descriptionPlaceholder);
   }
 
   private bodyTextarea(): Locator {
-    return this.getByPlaceholder('Write your article (in markdown)');
+    return this.getByPlaceholder(selectors.bodyPlaceholder);
   }
 
   private tagInput(): Locator {
-    return this.getByPlaceholder('Enter tags');
+    return this.getByPlaceholder(selectors.tagPlaceholder);
   }
 
   private publishButton(): Locator {
-    return this.getByRole('button', { name: 'Publish Article' });
+    return this.getByRole('button', { name: selectors.publishButton });
   }
 
   private successMessages(): Locator {
-    return this.getSuccessMessages(EditorPage.CONTAINER);
+    return this.getSuccessMessages(selectors.container);
   }
 
   private errorMessages(): Locator {
-    return this.getErrorMessages(EditorPage.CONTAINER);
+    return this.getErrorMessages(selectors.container);
   }
 
   private tagList(): Locator {
-    return this.page.locator(`${EditorPage.CONTAINER} .tag-list`);
+    return this.page.locator(`${selectors.container} ${selectors.tagList}`);
   }
 
   // Actions
@@ -107,11 +117,11 @@ export class EditorPage extends BasePage {
   }
 
   async getAddedTags(): Promise<string[]> {
-    return this.tagList().locator('.tag-pill').allTextContents();
+    return this.tagList().locator(selectors.tagPill).allTextContents();
   }
 
   async removeTag(tag: string): Promise<void> {
-    await this.tagList().locator('.tag-pill', { hasText: tag }).locator('.ion-close-round').click();
+    await this.tagList().locator(selectors.tagPill, { hasText: tag }).locator(selectors.tagPillClose).click();
   }
 
   async clearTitle(): Promise<void> {
