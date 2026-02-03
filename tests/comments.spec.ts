@@ -51,7 +51,7 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     await editorPage.createArticle(title, description, body);
 
     // Wait for success message
-    await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+    await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
     // Navigate to profile and open the article
     await profilePage.navigate(testUsername);
@@ -63,9 +63,6 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     await articlePage.waitForArticleLoaded();
     const commentText = generateRandomComment();
     await articlePage.addComment(commentText);
-
-    // Wait for comment to appear
-    await page.waitForTimeout(1000);
 
     // Verify comment is displayed
     const comments = await articlePage.getComments();
@@ -87,7 +84,7 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     await editorPage.createArticle(title, description, body);
 
     // Wait for success message
-    await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+    await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
     // Navigate to profile and open the article
     await profilePage.navigate(testUsername);
@@ -133,7 +130,7 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     await editorPage.createArticle(title, description, body);
 
     // Wait for success message
-    await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+    await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
     // Navigate to profile and open the article
     await profilePage.navigate(testUsername);

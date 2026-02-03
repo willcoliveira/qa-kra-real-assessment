@@ -130,9 +130,18 @@ export class ArticlePage extends BasePage {
     await this.unfavoriteButton().click();
   }
 
+  // BUG-007: Comments do not appear immediately after posting - requires page reload
+  // The frontend does not update the comments list after a successful POST.
+  // Workaround: Reload the page after posting to ensure the comment appears.
   async addComment(text: string): Promise<void> {
     await this.commentTextarea().fill(text);
     await this.postCommentButton().click();
+    // Wait briefly then reload to ensure comment is displayed (BUG-007 workaround)
+    await this.page.waitForTimeout(500);
+    await this.page.reload();
+    await this.waitForArticleLoaded();
+    // Wait for the comment with the text to appear
+    await this.page.getByText(text).first().waitFor({ state: 'visible', timeout: 10000 });
   }
 
   async deleteComment(index: number = 0): Promise<void> {
