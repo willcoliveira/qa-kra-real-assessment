@@ -61,7 +61,7 @@ docker-clean:
 
 # Reports
 report:
-	npx playwright show-report
+	open playwright-report/$$(ls -t playwright-report | head -1)/index.html
 
 # Linting
 lint:
