@@ -1,4 +1,6 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
+
+const browserName = (process.env.BROWSER as 'chromium' | 'firefox' | 'webkit') || 'chromium';
 
 export default defineConfig({
   testDir: './tests',
@@ -24,6 +26,11 @@ export default defineConfig({
   ],
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:4200',
+    browserName,
+    viewport: {
+      width: 1280,
+      height: 720,
+    },
     screenshot: 'only-on-failure',
     trace: process.env.CI ? 'off' : 'on-first-retry',
     headless: true,
@@ -34,12 +41,10 @@ export default defineConfig({
     {
       name: 'authenticated',
       testIgnore: /auth\.spec\.ts/,
-      use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'unauthenticated',
       testMatch: /auth\.spec\.ts/,
-      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });
