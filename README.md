@@ -241,23 +241,50 @@ npm run format
 
 ## Test Plan
 
-### Test Scenarios
+### Test Scenarios (29 tests)
 
 | Suite | Test Case | Tag |
 |-------|-----------|-----|
+| **Auth - Sign Up** | | |
 | Auth | Register new user successfully | @auth |
-| Auth | Login with valid credentials | @auth |
+| Auth | Register with existing email shows error | @auth |
+| **Auth - Login** | | |
+| Auth | Login with valid credentials successfully | @auth |
 | Auth | Login with wrong password shows error | @auth |
-| Article | Create article with title, description, body, tags | @articles |
-| Article | Article appears in My Articles list | @articles |
-| Article | Edit existing article | @articles |
+| Auth | Login with non-existent email shows error | @auth |
+| **Auth - Logout** | | |
+| Auth | Logout from settings page | @auth |
+| **Article - Write** | | |
+| Article | Create article with title, description, body and tags | @articles |
+| Article | Verify article appears in My Articles list | @articles |
+| **Article - Edit** | | |
+| Article | Edit existing article body and tags | @articles |
+| **Article - Delete** | | |
 | Article | Delete article successfully | @articles |
+| **Article - Empty State** | | |
+| Article | Display empty page for new user with no articles | @articles |
+| **Article - Form Validation** | | |
+| Article | Display error when title exceeds 120 characters | @articles |
+| Article | Display error when description exceeds 255 characters | @articles |
+| Article | Display error when tag exceeds 120 characters (BUG-002) | @articles |
+| Article | Display multiple validation errors when fields exceed limits | @articles |
+| Article | Allow article creation at exact character limits | @articles |
+| Article | Display required field errors when submitting spaces only | @articles |
+| Article | Display error when creating article with duplicate title | @articles |
+| Article | Publish button disabled when required fields are empty | @articles |
+| **Comments** | | |
 | Comments | Add comment to article | @comments |
 | Comments | Delete comment from article | @comments |
-| Follow | Follow user from profile | @feed |
-| Follow | See followed user articles in Your Feed | @feed |
-| Tags | Filter articles by tag | @tags |
-| Tags | Only tagged articles displayed after filter | @tags |
+| Comments | Display all comments on an article | @comments |
+| **Follow/Feed** | | |
+| Follow | Follow another user from their profile | @feed |
+| Follow | See followed user's article in Your Feed tab | @feed |
+| Follow | Unfollow a user | @feed |
+| **Tags** | | |
+| Tags | Filter articles by clicking a tag in Global Feed | @tags |
+| Tags | Verify only articles with selected tag are displayed | @tags |
+| Tags | Display article tags in the feed | @tags |
+| Tags | Return to global feed after tag filter | @tags |
 
 ### Bug Findings
 
@@ -305,9 +332,24 @@ qa-kra-real-assessment/
 ```
 
 ## CI/CD
-The project also contains the GitHub Actions workflow that runs on:
+
+The project contains a GitHub Actions workflow that runs on:
 - Push to `main` branch
 - Pull requests to `main` branch
+
+### Making Tests Required for PRs
+
+To enforce that all tests must pass before merging a PR:
+
+1. Go to your GitHub repository → **Settings** → **Branches**
+2. Click **Add branch protection rule**
+3. Set **Branch name pattern** to `main`
+4. Check **Require status checks to pass before merging**
+5. Search and select **E2E Tests** from the status checks list
+6. Optionally check **Require branches to be up to date before merging**
+7. Click **Create** or **Save changes**
+
+This ensures PRs cannot be merged until all Playwright tests pass.
 
 ## Environment Variables
 
@@ -321,7 +363,7 @@ The project also contains the GitHub Actions workflow that runs on:
 - I set up the project and added a couple of good practices from my experience and previous work.
 - When adding the Docker execution, I found some issues due to the container browser, and since I didn’t have the chance to properly find the root cause, the page refresh helped a lot for a clean execution.
 - I used AI to generate the docs and the bug report so I could focus on the implementation details.
-- You can find similar resolutions in my GitHub using the same structure for the POM, docs, reports, Docker, Make, and CI. This content came from my background and previous experiences and this is the approach I usually take for the projects I work on.
+- You can find similar resolutions in [my GitHub repositories](https://github.com/willcoliveira?tab=repositories) using the same structure for the POM, docs, reports, Docker, Make, and CI. This content came from my background and previous experiences and this is the approach I usually take for the projects I work on.
 
 ## License
 MIT
