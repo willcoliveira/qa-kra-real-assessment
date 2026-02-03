@@ -7,6 +7,7 @@
     "pw:setup": "playwright install --with-deps",
     "test": "playwright test",
     "test:auth": "playwright test --grep @auth",
+    "test:articles": "playwright test --grep @articles",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
