@@ -1,0 +1,37 @@
+{
+  "name": "qa-kra-real-assessment",
+  "version": "1.0.0",
+  "description": "Playwright and TypeScript test automation framework",
+  "main": "index.js",
+  "scripts": {
+    "pw:setup": "playwright install --with-deps",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "lint": "eslint src tests --ext .ts",
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "e2e",
+    "testing",
+    "automation"
+  ],
+  "author": "William Oliveira",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-playwright": "^0.22.2",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  }
+}
