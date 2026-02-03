@@ -116,6 +116,23 @@ export class EditorPage extends BasePage {
     return this.successMessages().isVisible();
   }
 
+  async isErrorMessageVisible(): Promise<boolean> {
+    return this.errorMessages().isVisible();
+  }
+
+  // Locator getters for assertions
+  getSuccessMessagesLocator(): Locator {
+    return this.successMessages();
+  }
+
+  getErrorMessagesLocator(): Locator {
+    return this.errorMessages();
+  }
+
+  getPublishButtonLocator(): Locator {
+    return this.publishButton();
+  }
+
   async getAddedTags(): Promise<string[]> {
     return this.tagList().locator(selectors.tagPill).allTextContents();
   }

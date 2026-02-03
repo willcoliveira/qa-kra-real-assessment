@@ -52,7 +52,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await editorPage.createArticle(title, description, body, tags);
 
       // Wait for success message (app stays on editor page after publish)
-      await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+      await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
       const successMessage = await editorPage.getSuccessMessage();
       expect(successMessage).toContain('Published successfully');
 
@@ -88,7 +88,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await editorPage.createArticle(title, description, body);
 
       // Wait for success message
-      await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+      await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
       // Navigate to profile and check My Articles
       await profilePage.navigate(testUsername);
@@ -120,7 +120,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       ]);
 
       // Wait for success message
-      await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+      await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
       // Navigate to profile and open the article
       await profilePage.navigate(testUsername);
@@ -146,7 +146,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await editorPage.clickPublish();
 
       // Wait for success message
-      await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+      await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
       // Navigate to the article to verify the update
       await profilePage.navigate(testUsername);
@@ -178,7 +178,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await editorPage.createArticle(title, description, body);
 
       // Wait for success message
-      await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+      await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
       // Navigate to profile and open the article
       await profilePage.navigate(testUsername);
@@ -204,6 +204,225 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
 
       const articles = await homePage.getArticleTitles();
       expect(articles).not.toContain(title);
+    });
+  });
+
+  test.describe('Empty State', () => {
+    test('should display empty page for new user with no articles', async ({
+      browser,
+      profilePage,
+    }) => {
+      // Create a fresh new user with no articles
+      const context = await browser.newContext();
+      const page = await context.newPage();
+
+      const newUsername = generateRandomUsername('emptyuser');
+      const newEmail = generateRandomEmail('emptyuser');
+      const newPassword = 'Test@123456';
+
+      // Register new user
+      const registerPage = new RegisterPage(page);
+      await registerPage.navigate();
+      await registerPage.register(newUsername, newEmail, newPassword);
+      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+
+      // Login
+      const { LoginPage } = await import('../src/pages/LoginPage');
+      const loginPage = new LoginPage(page);
+      await loginPage.navigate();
+      await loginPage.login(newEmail, newPassword);
+      await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+
+      // Navigate to the new user's profile
+      const { ProfilePage } = await import('../src/pages/ProfilePage');
+      const newProfilePage = new ProfilePage(page);
+      await newProfilePage.navigate(newUsername);
+      await newProfilePage.waitForProfileLoaded();
+
+      // Verify empty state message is displayed
+      await expect(newProfilePage.getArticlePreviewLocator()).toContainText('No articles are here... yet.');
+
+      await context.close();
+    });
+  });
+
+  test.describe('Form Validation', () => {
+    const generateLongString = (length: number): string => {
+      return 'a'.repeat(length);
+    };
+
+    test('should display error when title exceeds 120 characters', async ({
+      page,
+      editorPage,
+    }) => {
+      const longTitle = generateLongString(121);
+      const description = generateRandomArticleDescription();
+      const body = generateRandomArticleBody();
+
+      await editorPage.navigate();
+      await editorPage.createArticle(longTitle, description, body);
+
+      // Verify error message is displayed
+      await expect(editorPage.getErrorMessagesLocator()).toBeVisible();
+      const errorMessage = await editorPage.getErrorMessage();
+      expect(errorMessage).toContain('Title');
+      expect(errorMessage).toContain('120 characters');
+    });
+
+    test('should display error when description exceeds 255 characters', async ({
+      editorPage,
+    }) => {
+      const title = generateRandomArticleTitle('Valid');
+      const longDescription = generateLongString(256);
+      const body = generateRandomArticleBody();
+
+      await editorPage.navigate();
+      await editorPage.createArticle(title, longDescription, body);
+
+      // Verify error message is displayed
+      await expect(editorPage.getErrorMessagesLocator()).toBeVisible();
+      const errorMessage = await editorPage.getErrorMessage();
+      expect(errorMessage).toContain('Description');
+      expect(errorMessage).toContain('255 characters');
+    });
+
+    // BUG-002: TagList validation error displays "[object Object]"
+    test('should display proper error when tag exceeds 120 characters', async ({
+      editorPage,
+    }) => {
+      const title = generateRandomArticleTitle('Valid');
+      const description = generateRandomArticleDescription();
+      const body = generateRandomArticleBody();
+      const longTag = generateLongString(121);
+
+      await editorPage.navigate();
+      await editorPage.createArticle(title, description, body, [longTag]);
+
+      // Verify error message is displayed
+      await expect(editorPage.getErrorMessagesLocator()).toBeVisible();
+      const errorMessage = await editorPage.getErrorMessage();
+
+      // BUG-002: This currently shows "[object Object]" instead of the actual error
+      // Expected: should contain "120 characters"
+      // Actual: contains "[object Object]"
+      expect(errorMessage).toContain('Taglist');
+
+      // This assertion documents the bug - it will fail when bug is fixed
+      // Remove this and uncomment the next assertion when BUG-002 is resolved
+      expect(errorMessage).toContain('[object Object]');
+      // expect(errorMessage).toContain('120 characters');
+    });
+
+    test('should display multiple validation errors when multiple fields exceed limits', async ({
+      editorPage,
+    }) => {
+      const longTitle = generateLongString(121);
+      const longDescription = generateLongString(256);
+      const body = generateRandomArticleBody();
+
+      await editorPage.navigate();
+      await editorPage.createArticle(longTitle, longDescription, body);
+
+      // Verify error messages are displayed
+      await expect(editorPage.getErrorMessagesLocator()).toBeVisible();
+      const errorMessage = await editorPage.getErrorMessage();
+
+      // Should contain errors for both fields
+      expect(errorMessage).toContain('Title');
+      expect(errorMessage).toContain('Description');
+    });
+
+    test('should allow article creation at exact character limits', async ({
+      editorPage,
+      profilePage,
+    }) => {
+      // Generate unique prefix to avoid duplicate title errors
+      const uniquePrefix = Math.random().toString(36).substring(2, 10);
+      // Test with exact limits (120 for title, 255 for description)
+      // Title: 8 char prefix + 112 'a' chars = 120 total
+      const title = uniquePrefix + generateLongString(112);
+      const description = generateLongString(255);
+      const body = generateRandomArticleBody();
+
+      await editorPage.navigate();
+      await editorPage.createArticle(title, description, body);
+
+      // Should succeed - verify success message
+      await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
+
+      // Verify article was created
+      await profilePage.navigate(testUsername);
+      await profilePage.waitForProfileLoaded();
+      const articles = await profilePage.getMyArticles();
+      expect(articles).toContain(title);
+    });
+
+    test('should display required field errors when submitting with spaces only', async ({
+      editorPage,
+    }) => {
+      // Fill all fields with spaces only
+      await editorPage.navigate();
+      await editorPage.fillTitle('   ');
+      await editorPage.fillDescription('   ');
+      await editorPage.fillBody('   ');
+      await editorPage.clickPublish();
+
+      // Verify error messages are displayed
+      await expect(editorPage.getErrorMessagesLocator()).toBeVisible();
+      const errorMessage = await editorPage.getErrorMessage();
+
+      // Should contain errors for all required fields
+      expect(errorMessage).toContain('Title');
+      expect(errorMessage).toContain('may not be blank');
+      expect(errorMessage).toContain('Description');
+      expect(errorMessage).toContain('Body');
+    });
+
+    test('should display error when creating article with duplicate title', async ({
+      editorPage,
+    }) => {
+      const duplicateTitle = generateRandomArticleTitle('Duplicate');
+      const description = generateRandomArticleDescription();
+      const body = generateRandomArticleBody();
+
+      // Create first article
+      await editorPage.navigate();
+      await editorPage.createArticle(duplicateTitle, description, body);
+      await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
+
+      // Try to create second article with same title
+      await editorPage.navigate();
+      await editorPage.createArticle(duplicateTitle, description, body);
+
+      // Verify error message is displayed
+      await expect(editorPage.getErrorMessagesLocator()).toBeVisible();
+      const errorMessage = await editorPage.getErrorMessage();
+      expect(errorMessage).toContain('Title');
+      expect(errorMessage).toContain('article with this title already exists');
+    });
+
+    test('should have Publish Article button disabled when required fields are empty', async ({
+      editorPage,
+    }) => {
+      await editorPage.navigate();
+
+      const publishButton = editorPage.getPublishButtonLocator();
+
+      // Button should be visible but disabled when form is empty
+      await expect(publishButton).toBeVisible();
+      await expect(publishButton).toBeDisabled();
+
+      // Fill only title - button should still be disabled
+      await editorPage.fillTitle(generateRandomArticleTitle('Test'));
+      await expect(publishButton).toBeDisabled();
+
+      // Fill description - button should still be disabled
+      await editorPage.fillDescription(generateRandomArticleDescription());
+      await expect(publishButton).toBeDisabled();
+
+      // Fill body - button should now be enabled
+      await editorPage.fillBody(generateRandomArticleBody());
+      await expect(publishButton).toBeEnabled();
     });
   });
 });

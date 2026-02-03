@@ -139,4 +139,9 @@ export class ProfilePage extends BasePage {
     const previews = this.page.locator(`${selectors.articlePreview}:has(.preview-link)`);
     return previews.count();
   }
+
+  // Locator getters for assertions
+  getArticlePreviewLocator(): Locator {
+    return this.page.locator(selectors.articlePreview);
+  }
 }
