@@ -365,5 +365,10 @@ This ensures PRs cannot be merged until all Playwright tests pass.
 - I used AI to generate the docs and the bug report so I could focus on the implementation details.
 - You can find similar resolutions in [my GitHub repositories](https://github.com/willcoliveira?tab=repositories) using the same structure for the POM, docs, reports, Docker, Make, and CI. This content came from my background and previous experiences and this is the approach I usually take for the projects I work on.
 
+### Improvements I would add with more time
+- Add an API helper layer (`src/utils/api.helper.ts`) to handle test setup and teardown via direct API calls instead of UI interactions. Right now every spec file registers users and creates articles through the browser in `beforeAll` hooks, which is slow and adds flakiness to things the test isn't actually testing.
+- Replace the `waitForTimeout` calls with proper waits like `waitForResponse` or `waitForSelector`. There are about a cpuple of sleeps across the tests adding some additional seconds per run. Some are workarounds for BUG-007, but others like the feed tab waits could use PW's network interception instead.
+- Add test data cleanup in `afterAll` hooks so the database doesn't accumulate garbage across runs.
+
 ## License
 MIT
