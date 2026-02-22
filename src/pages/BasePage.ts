@@ -1,23 +1,31 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, test } from '@playwright/test';
 
 export class BasePage {
   constructor(protected page: Page) {}
 
   async navigate(path: string = ''): Promise<void> {
-    const hashPath = path.startsWith('#') ? path : `#${path}`;
-    await this.page.goto(`/${hashPath}`);
+    await test.step(`Navigate to ${path || '/'}`, async () => {
+      const hashPath = path.startsWith('#') ? path : `#${path}`;
+      await this.page.goto(`/${hashPath}`);
+    });
   }
 
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('domcontentloaded');
+    await test.step('Wait for page load', async () => {
+      await this.page.waitForLoadState('domcontentloaded');
+    });
   }
 
   async waitForUrl(urlPattern: string | RegExp): Promise<void> {
-    await this.page.waitForURL(urlPattern);
+    await test.step('Wait for URL change', async () => {
+      await this.page.waitForURL(urlPattern);
+    });
   }
 
   async getCurrentUrl(): Promise<string> {
-    return this.page.url();
+    return await test.step('Get current URL', async () => {
+      return this.page.url();
+    });
   }
 
   // Reusable selector helpers

@@ -1,5 +1,6 @@
 import { test, expect } from '../src/fixtures/test.fixture';
 import { ensureAuthenticated } from '../src/utils/auth.helper';
+import { TIMEOUTS } from '../src/utils/timeouts';
 import {
   generateRandomArticleTitle,
   generateRandomArticleDescription,
@@ -27,7 +28,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
     const registerPage = new RegisterPage(page);
     await registerPage.navigate();
     await registerPage.register(testUsername, testEmail, testPassword);
-    await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+    await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
     await context.close();
   });
@@ -66,7 +67,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
 
       // Click on the article to verify it opens correctly
       await profilePage.clickArticleByTitle(title);
-      await page.waitForURL(/.*#\/article\//, { timeout: 10000 });
+      await page.waitForURL(/.*#\/article\//, { timeout: TIMEOUTS.MEDIUM });
 
       // Wait for article to load and verify title
       await articlePage.waitForArticleLoaded();
@@ -126,15 +127,18 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await profilePage.navigate(testUsername);
       await profilePage.waitForProfileLoaded();
       await profilePage.clickArticleByTitle(originalTitle);
-      await page.waitForURL(/.*#\/article\//, { timeout: 10000 });
+      await page.waitForURL(/.*#\/article\//, { timeout: TIMEOUTS.MEDIUM });
 
       // Click edit button
       await articlePage.waitForArticleLoaded();
       await articlePage.clickEdit();
-      await page.waitForURL(/.*#\/editor\//, { timeout: 10000 });
+      await page.waitForURL(/.*#\/editor\//, { timeout: TIMEOUTS.MEDIUM });
 
       // Wait for form to be populated with article data
-      await page.waitForTimeout(1000);
+      await expect(async () => {
+        const bodyValue = await editorPage.getBody();
+        expect(bodyValue.length).toBeGreaterThan(0);
+      }).toPass({ timeout: TIMEOUTS.MEDIUM });
 
       // Edit the article
       const newBody = 'This is the updated body content ' + generateRandomTag();
@@ -152,7 +156,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await profilePage.navigate(testUsername);
       await profilePage.waitForProfileLoaded();
       await profilePage.clickArticleByTitle(originalTitle);
-      await page.waitForURL(/.*#\/article\//, { timeout: 10000 });
+      await page.waitForURL(/.*#\/article\//, { timeout: TIMEOUTS.MEDIUM });
 
       // Verify the article body was updated
       await articlePage.waitForArticleLoaded();
@@ -184,7 +188,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await profilePage.navigate(testUsername);
       await profilePage.waitForProfileLoaded();
       await profilePage.clickArticleByTitle(title);
-      await page.waitForURL(/.*#\/article\//, { timeout: 10000 });
+      await page.waitForURL(/.*#\/article\//, { timeout: TIMEOUTS.MEDIUM });
 
       // Verify article exists
       await articlePage.waitForArticleLoaded();
@@ -195,7 +199,7 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       await articlePage.clickDelete();
 
       // Verify navigation to home page after deletion
-      await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.MEDIUM });
 
       // Verify the article no longer appears in global feed
       await homePage.navigate();
@@ -224,14 +228,14 @@ test.describe('Article Management', { tag: ['@articles'] }, () => {
       const registerPage = new RegisterPage(page);
       await registerPage.navigate();
       await registerPage.register(newUsername, newEmail, newPassword);
-      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
       // Login
       const { LoginPage } = await import('../src/pages/LoginPage');
       const loginPage = new LoginPage(page);
       await loginPage.navigate();
       await loginPage.login(newEmail, newPassword);
-      await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.MEDIUM });
 
       // Navigate to the new user's profile
       const { ProfilePage } = await import('../src/pages/ProfilePage');

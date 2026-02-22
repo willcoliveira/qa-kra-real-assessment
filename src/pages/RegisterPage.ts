@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export const selectors = {
@@ -46,47 +46,76 @@ export class RegisterPage extends BasePage {
 
   // Actions
   async navigate(): Promise<void> {
-    await super.navigate('/register');
+    await test.step('Navigate to register page', async () => {
+      await super.navigate('/register');
+    });
   }
 
   async fillUsername(username: string): Promise<void> {
-    await this.usernameInput().fill(username);
+    await test.step('Fill username field', async () => {
+      await this.usernameInput().fill(username);
+    });
   }
 
   async fillEmail(email: string): Promise<void> {
-    await this.emailInput().fill(email);
+    await test.step('Fill email field', async () => {
+      await this.emailInput().fill(email);
+    });
   }
 
   async fillPassword(password: string): Promise<void> {
-    await this.passwordInput().fill(password);
+    await test.step('Fill password field', async () => {
+      await this.passwordInput().fill(password);
+    });
   }
 
   async clickSignUp(): Promise<void> {
-    await this.signUpButton().click();
+    await test.step('Click sign up button', async () => {
+      await this.signUpButton().click();
+    });
   }
 
   async register(username: string, email: string, password: string): Promise<void> {
-    await this.fillUsername(username);
-    await this.fillEmail(email);
-    await this.fillPassword(password);
-    await this.clickSignUp();
+    await test.step('Register new user', async () => {
+      await this.fillUsername(username);
+      await this.fillEmail(email);
+      await this.fillPassword(password);
+      await this.clickSignUp();
+    });
   }
 
   async getErrorMessage(): Promise<string> {
-    await this.errorMessages().waitFor({ state: 'visible' });
-    return (await this.errorMessages().textContent()) ?? '';
+    return await test.step('Get error message', async () => {
+      await this.errorMessages().waitFor({ state: 'visible' });
+      return (await this.errorMessages().textContent()) ?? '';
+    });
   }
 
   async getSuccessMessage(): Promise<string> {
-    await this.successMessages().waitFor({ state: 'visible' });
-    return (await this.successMessages().textContent()) ?? '';
+    return await test.step('Get success message', async () => {
+      await this.successMessages().waitFor({ state: 'visible' });
+      return (await this.successMessages().textContent()) ?? '';
+    });
   }
 
   async isSuccessMessageVisible(): Promise<boolean> {
-    return this.successMessages().isVisible();
+    return await test.step('Check if success message is visible', async () => {
+      return this.successMessages().isVisible();
+    });
   }
 
   async clickLoginLink(): Promise<void> {
-    await this.loginLink().click();
+    await test.step('Click login link', async () => {
+      await this.loginLink().click();
+    });
+  }
+
+  // Locator getters for assertions
+  getSuccessMessagesLocator(): Locator {
+    return this.successMessages();
+  }
+
+  getErrorMessagesLocator(): Locator {
+    return this.errorMessages();
   }
 }

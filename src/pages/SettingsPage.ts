@@ -1,5 +1,6 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { TIMEOUTS } from '../utils/timeouts';
 
 export const selectors = {
   container: '.settings-page',
@@ -56,60 +57,88 @@ export class SettingsPage extends BasePage {
 
   // Actions
   async navigate(): Promise<void> {
-    await super.navigate('/settings');
+    await test.step('Navigate to settings page', async () => {
+      await super.navigate('/settings');
+    });
   }
 
   async fillProfileImage(url: string): Promise<void> {
-    await this.profileImageInput().fill(url);
+    await test.step('Fill profile image URL', async () => {
+      await this.profileImageInput().fill(url);
+    });
   }
 
   async fillUsername(username: string): Promise<void> {
-    await this.usernameInput().fill(username);
+    await test.step('Fill username field', async () => {
+      await this.usernameInput().fill(username);
+    });
   }
 
   async fillBio(bio: string): Promise<void> {
-    await this.bioTextarea().fill(bio);
+    await test.step('Fill bio field', async () => {
+      await this.bioTextarea().fill(bio);
+    });
   }
 
   async fillEmail(email: string): Promise<void> {
-    await this.emailInput().fill(email);
+    await test.step('Fill email field', async () => {
+      await this.emailInput().fill(email);
+    });
   }
 
   async fillPassword(password: string): Promise<void> {
-    await this.passwordInput().fill(password);
+    await test.step('Fill password field', async () => {
+      await this.passwordInput().fill(password);
+    });
   }
 
   async clickUpdate(): Promise<void> {
-    await this.updateButton().click();
+    await test.step('Click update settings button', async () => {
+      await this.updateButton().click();
+    });
   }
 
   async clickLogout(): Promise<void> {
-    await this.logoutButton().click();
+    await test.step('Click logout button', async () => {
+      await this.logoutButton().click();
+    });
   }
 
   async getSuccessMessage(): Promise<string> {
-    await this.successMessages().waitFor({ state: 'visible' });
-    return (await this.successMessages().textContent()) ?? '';
+    return await test.step('Get success message', async () => {
+      await this.successMessages().waitFor({ state: 'visible' });
+      return (await this.successMessages().textContent()) ?? '';
+    });
   }
 
   async getErrorMessage(): Promise<string> {
-    await this.errorMessages().waitFor({ state: 'visible' });
-    return (await this.errorMessages().textContent()) ?? '';
+    return await test.step('Get error message', async () => {
+      await this.errorMessages().waitFor({ state: 'visible' });
+      return (await this.errorMessages().textContent()) ?? '';
+    });
   }
 
   async getUsername(): Promise<string> {
-    return (await this.usernameInput().inputValue()) ?? '';
+    return await test.step('Get username value', async () => {
+      return (await this.usernameInput().inputValue()) ?? '';
+    });
   }
 
   async getEmail(): Promise<string> {
-    return (await this.emailInput().inputValue()) ?? '';
+    return await test.step('Get email value', async () => {
+      return (await this.emailInput().inputValue()) ?? '';
+    });
   }
 
   async getBio(): Promise<string> {
-    return (await this.bioTextarea().inputValue()) ?? '';
+    return await test.step('Get bio value', async () => {
+      return (await this.bioTextarea().inputValue()) ?? '';
+    });
   }
 
   async waitForSettingsLoaded(): Promise<void> {
-    await this.updateButton().waitFor({ state: 'visible', timeout: 10000 });
+    await test.step('Wait for settings to load', async () => {
+      await this.updateButton().waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
+    });
   }
 }
