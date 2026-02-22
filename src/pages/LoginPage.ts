@@ -1,5 +1,6 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { TIMEOUTS } from '../utils/timeouts';
 
 export const selectors = {
   container: '.auth-page',
@@ -37,38 +38,59 @@ export class LoginPage extends BasePage {
 
   // Actions
   async navigate(): Promise<void> {
-    await super.navigate('/login');
+    await test.step('Navigate to login page', async () => {
+      await super.navigate('/login');
+    });
   }
 
   async fillEmail(email: string): Promise<void> {
-    await this.emailInput().fill(email);
+    await test.step('Fill email field', async () => {
+      await this.emailInput().fill(email);
+    });
   }
 
   async fillPassword(password: string): Promise<void> {
-    await this.passwordInput().fill(password);
+    await test.step('Fill password field', async () => {
+      await this.passwordInput().fill(password);
+    });
   }
 
   async clickSignIn(): Promise<void> {
-    await this.signInButton().click();
+    await test.step('Click sign in button', async () => {
+      await this.signInButton().click();
+    });
   }
 
   async login(email: string, password: string): Promise<void> {
-    await this.fillEmail(email);
-    await this.fillPassword(password);
-    await this.clickSignIn();
-    await this.page.waitForURL(/.*#\/$/, { timeout: 10000 });
+    await test.step('Login with credentials', async () => {
+      await this.fillEmail(email);
+      await this.fillPassword(password);
+      await this.clickSignIn();
+      await this.page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.MEDIUM });
+    });
   }
 
   async getErrorMessage(): Promise<string> {
-    await this.errorMessages().waitFor({ state: 'visible' });
-    return (await this.errorMessages().textContent()) ?? '';
+    return await test.step('Get error message', async () => {
+      await this.errorMessages().waitFor({ state: 'visible' });
+      return (await this.errorMessages().textContent()) ?? '';
+    });
   }
 
   async isErrorMessageVisible(): Promise<boolean> {
-    return this.errorMessages().isVisible();
+    return await test.step('Check if error message is visible', async () => {
+      return this.errorMessages().isVisible();
+    });
   }
 
   async clickRegisterLink(): Promise<void> {
-    await this.registerLink().click();
+    await test.step('Click register link', async () => {
+      await this.registerLink().click();
+    });
+  }
+
+  // Locator getters for assertions
+  getErrorMessagesLocator(): Locator {
+    return this.errorMessages();
   }
 }

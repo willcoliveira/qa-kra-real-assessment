@@ -1,5 +1,6 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { TIMEOUTS } from '../utils/timeouts';
 
 export const selectors = {
   container: '.article-page',
@@ -91,104 +92,146 @@ export class ArticlePage extends BasePage {
 
   // Actions
   async navigate(slug: string): Promise<void> {
-    await super.navigate(`/article/${slug}`);
+    await test.step(`Navigate to article "${slug}"`, async () => {
+      await super.navigate(`/article/${slug}`);
+    });
   }
 
   async getTitle(): Promise<string> {
-    return (await this.articleTitle().textContent()) ?? '';
+    return await test.step('Get article title', async () => {
+      return (await this.articleTitle().textContent()) ?? '';
+    });
   }
 
   async getBody(): Promise<string> {
-    return (await this.articleBody().textContent()) ?? '';
+    return await test.step('Get article body', async () => {
+      return (await this.articleBody().textContent()) ?? '';
+    });
   }
 
   async getTags(): Promise<string[]> {
-    return this.tagList().locator(selectors.tagPill).allTextContents();
+    return await test.step('Get article tags', async () => {
+      return this.tagList().locator(selectors.tagPill).allTextContents();
+    });
   }
 
   async clickDelete(): Promise<void> {
-    await this.deleteButton().click();
+    await test.step('Click delete article button', async () => {
+      await this.deleteButton().click();
+    });
   }
 
   async clickEdit(): Promise<void> {
-    await this.editButton().click();
+    await test.step('Click edit article button', async () => {
+      await this.editButton().click();
+    });
   }
 
   async clickFollow(): Promise<void> {
-    await this.followButton().click();
+    await test.step('Click follow button', async () => {
+      await this.followButton().click();
+    });
   }
 
   async clickUnfollow(): Promise<void> {
-    await this.unfollowButton().click();
+    await test.step('Click unfollow button', async () => {
+      await this.unfollowButton().click();
+    });
   }
 
   async clickFavorite(): Promise<void> {
-    await this.favoriteButton().click();
+    await test.step('Click favorite button', async () => {
+      await this.favoriteButton().click();
+    });
   }
 
   async clickUnfavorite(): Promise<void> {
-    await this.unfavoriteButton().click();
+    await test.step('Click unfavorite button', async () => {
+      await this.unfavoriteButton().click();
+    });
   }
 
   // BUG-007: Comments do not appear immediately after posting - requires page reload
   // The frontend does not update the comments list after a successful POST.
   // Workaround: Reload the page after posting to ensure the comment appears.
   async addComment(text: string): Promise<void> {
-    await this.commentTextarea().fill(text);
-    await this.postCommentButton().click();
-    // Wait briefly then reload to ensure comment is displayed (BUG-007 workaround)
-    await this.page.waitForTimeout(500);
-    await this.page.reload();
-    await this.waitForArticleLoaded();
-    // Wait for the comment with the text to appear
-    await this.page.getByText(text).first().waitFor({ state: 'visible', timeout: 10000 });
+    await test.step(`Add comment "${text}"`, async () => {
+      await this.commentTextarea().fill(text);
+      // BUG-007 workaround: set up response listener before click to avoid race condition
+      const responsePromise = this.page.waitForResponse(
+        resp => resp.url().includes('/comments') && resp.ok(),
+        { timeout: TIMEOUTS.MEDIUM }
+      );
+      await this.postCommentButton().click();
+      await responsePromise;
+      await this.page.reload();
+      await this.waitForArticleLoaded();
+      // Wait for the comment with the text to appear
+      await this.page.getByText(text).first().waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
+    });
   }
 
   async deleteComment(index: number = 0): Promise<void> {
-    await this.commentCards().nth(index).locator(selectors.commentDeleteIcon).click();
+    await test.step(`Delete comment at index ${index}`, async () => {
+      await this.commentCards().nth(index).locator(selectors.commentDeleteIcon).click();
+    });
   }
 
   async getComments(): Promise<string[]> {
-    const count = await this.commentCards().count();
-    const comments: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const text = await this.commentCards().nth(i).locator(selectors.commentText).textContent();
-      if (text) {
-        comments.push(text.trim());
+    return await test.step('Get all comments', async () => {
+      const count = await this.commentCards().count();
+      const comments: string[] = [];
+      for (let i = 0; i < count; i++) {
+        const text = await this.commentCards().nth(i).locator(selectors.commentText).textContent();
+        if (text) {
+          comments.push(text.trim());
+        }
       }
-    }
-    return comments;
+      return comments;
+    });
   }
 
   async getCommentCount(): Promise<number> {
-    return this.commentCards().count();
+    return await test.step('Get comment count', async () => {
+      return this.commentCards().count();
+    });
   }
 
   async getAuthorUsername(): Promise<string> {
-    return (await this.authorLink().textContent()) ?? '';
+    return await test.step('Get author username', async () => {
+      return (await this.authorLink().textContent()) ?? '';
+    });
   }
 
   async clickAuthor(): Promise<void> {
-    await this.authorLink().click();
+    await test.step('Click author link', async () => {
+      await this.authorLink().click();
+    });
   }
 
   async isDeleteButtonVisible(): Promise<boolean> {
-    return this.deleteButton().isVisible();
+    return await test.step('Check if delete button is visible', async () => {
+      return this.deleteButton().isVisible();
+    });
   }
 
   async isEditButtonVisible(): Promise<boolean> {
-    return this.editButton().isVisible();
+    return await test.step('Check if edit button is visible', async () => {
+      return this.editButton().isVisible();
+    });
   }
 
   async waitForArticleLoaded(): Promise<void> {
-    // Wait for title to not be "Loading article..."
-    await this.articleTitle().waitFor({ state: 'visible' });
-    await this.page.waitForFunction(
-      () => {
-        const title = document.querySelector('.article-page .banner h1');
-        return title && !title.textContent?.includes('Loading');
-      },
-      { timeout: 10000 }
-    );
+    await test.step('Wait for article to load', async () => {
+      // Wait for title to not be "Loading article..."
+      await this.articleTitle().waitFor({ state: 'visible' });
+      await this.page.waitForFunction(
+        () => {
+          const title = document.querySelector('.article-page .banner h1');
+          return title && !title.textContent?.includes('Loading');
+        },
+        { timeout: TIMEOUTS.MEDIUM }
+      );
+    });
   }
 }

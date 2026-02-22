@@ -1,5 +1,6 @@
 import { test, expect } from '../src/fixtures/test.fixture';
 import { ensureAuthenticated, clearStorageState } from '../src/utils/auth.helper';
+import { TIMEOUTS } from '../src/utils/timeouts';
 import {
   generateRandomArticleTitle,
   generateRandomArticleDescription,
@@ -34,7 +35,7 @@ test.describe('Follow Feed', { tag: ['@feed'] }, () => {
     const registerPage = new RegisterPage(page);
     await registerPage.navigate();
     await registerPage.register(userAUsername, userAEmail, userAPassword);
-    await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+    await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
     // User B - the one to be followed
     userBUsername = generateRandomUsername('followed');
@@ -43,13 +44,13 @@ test.describe('Follow Feed', { tag: ['@feed'] }, () => {
 
     await registerPage.navigate();
     await registerPage.register(userBUsername, userBEmail, userBPassword);
-    await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+    await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
     // Login as User B and create an article
     const loginPage = new LoginPage(page);
     await loginPage.navigate();
     await loginPage.login(userBEmail, userBPassword);
-    await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+    await page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.MEDIUM });
 
     // Create an article as User B
     userBArticleTitle = generateRandomArticleTitle('UserB');
@@ -62,7 +63,7 @@ test.describe('Follow Feed', { tag: ['@feed'] }, () => {
     );
 
     // Wait for success message
-    await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+    await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
     // Verify article was created by navigating to profile
     const profilePage = new ProfilePage(page);
@@ -122,16 +123,16 @@ test.describe('Follow Feed', { tag: ['@feed'] }, () => {
 
     if (await followButton.isVisible()) {
       await profilePage.clickFollow();
-      await expect(unfollowButton).toBeVisible({ timeout: 5000 });
+      await expect(unfollowButton).toBeVisible({ timeout: TIMEOUTS.SHORT });
     }
 
     // Navigate to home page
     await homePage.navigate();
-    await page.waitForTimeout(1000);
+    await homePage.waitForArticlesLoaded();
 
     // Click on Your Feed tab
     await homePage.clickMyFeed();
-    await page.waitForTimeout(2000);
+    await homePage.waitForArticlesLoaded();
 
     // Verify User B's article appears in Your Feed
     const articles = await homePage.getArticleTitles();
@@ -152,20 +153,20 @@ test.describe('Follow Feed', { tag: ['@feed'] }, () => {
     // Follow first if not already following
     if (await followButton.isVisible()) {
       await profilePage.clickFollow();
-      await expect(unfollowButton).toBeVisible({ timeout: 5000 });
+      await expect(unfollowButton).toBeVisible({ timeout: TIMEOUTS.SHORT });
     }
 
     // Now unfollow
     await profilePage.clickUnfollow();
 
     // Verify follow button appears again
-    await expect(followButton).toBeVisible({ timeout: 5000 });
+    await expect(followButton).toBeVisible({ timeout: TIMEOUTS.SHORT });
 
     // Verify the article no longer appears in Your Feed
     await homePage.navigate();
-    await page.waitForTimeout(1000);
+    await homePage.waitForArticlesLoaded();
     await homePage.clickMyFeed();
-    await page.waitForTimeout(2000);
+    await homePage.waitForArticlesLoaded();
 
     // Your Feed might show "No articles" or just not include the unfollowed user's articles
     const articles = await homePage.getArticleTitles();

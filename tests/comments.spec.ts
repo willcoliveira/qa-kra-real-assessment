@@ -1,5 +1,6 @@
 import { test, expect } from '../src/fixtures/test.fixture';
 import { ensureAuthenticated } from '../src/utils/auth.helper';
+import { TIMEOUTS } from '../src/utils/timeouts';
 import {
   generateRandomArticleTitle,
   generateRandomArticleDescription,
@@ -27,7 +28,7 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     const registerPage = new RegisterPage(page);
     await registerPage.navigate();
     await registerPage.register(testUsername, testEmail, testPassword);
-    await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+    await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
     await context.close();
   });
@@ -57,7 +58,7 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     await profilePage.navigate(testUsername);
     await profilePage.waitForProfileLoaded();
     await profilePage.clickArticleByTitle(title);
-    await page.waitForURL(/.*#\/article\//, { timeout: 10000 });
+    await page.waitForURL(/.*#\/article\//, { timeout: TIMEOUTS.MEDIUM });
 
     // Add a comment
     await articlePage.waitForArticleLoaded();
@@ -90,25 +91,22 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     await profilePage.navigate(testUsername);
     await profilePage.waitForProfileLoaded();
     await profilePage.clickArticleByTitle(title);
-    await page.waitForURL(/.*#\/article\//, { timeout: 10000 });
+    await page.waitForURL(/.*#\/article\//, { timeout: TIMEOUTS.MEDIUM });
 
     // Add a comment
     await articlePage.waitForArticleLoaded();
     const commentText = generateRandomComment();
     await articlePage.addComment(commentText);
 
-    // Wait for comment to appear
-    await page.waitForTimeout(1000);
-
-    // Verify comment exists
+    // Verify comment exists (addComment already waits for text to appear)
     let comments = await articlePage.getComments();
     expect(comments).toContain(commentText);
 
     // Delete the comment
     await articlePage.deleteComment(0);
 
-    // Wait for deletion to process
-    await page.waitForTimeout(1000);
+    // Wait for comment to be removed from the DOM
+    await expect(page.getByText(commentText)).toBeHidden({ timeout: TIMEOUTS.MEDIUM });
 
     // Verify comment is removed
     comments = await articlePage.getComments();
@@ -136,7 +134,7 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     await profilePage.navigate(testUsername);
     await profilePage.waitForProfileLoaded();
     await profilePage.clickArticleByTitle(title);
-    await page.waitForURL(/.*#\/article\//, { timeout: 10000 });
+    await page.waitForURL(/.*#\/article\//, { timeout: TIMEOUTS.MEDIUM });
 
     // Add multiple comments
     await articlePage.waitForArticleLoaded();
@@ -145,11 +143,8 @@ test.describe('Comments', { tag: ['@comments'] }, () => {
     const comment3 = generateRandomComment();
 
     await articlePage.addComment(comment1);
-    await page.waitForTimeout(500);
     await articlePage.addComment(comment2);
-    await page.waitForTimeout(500);
     await articlePage.addComment(comment3);
-    await page.waitForTimeout(1000);
 
     // Verify all comments are displayed
     const comments = await articlePage.getComments();

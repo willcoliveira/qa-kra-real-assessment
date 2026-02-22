@@ -15,8 +15,8 @@
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
-    "lint": "eslint src tests --ext .ts",
-    "lint:fix": "eslint src tests --ext .ts --fix",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\""
   },
   "keywords": [
@@ -29,15 +29,18 @@
   "author": "William Oliveira",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.50.0",
     "@types/node": "^20.11.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "eslint": "^10.0.1",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-playwright": "^0.22.2",
+    "eslint-plugin-playwright": "^2.7.0",
+    "globals": "^17.3.0",
     "prettier": "^3.2.5",
     "typescript": "^5.3.3",
+    "wico-playwright-agent-skills": "^0.1.1",
     "yaml": "^2.3.4"
   }
 }

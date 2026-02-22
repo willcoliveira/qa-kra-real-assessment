@@ -1,5 +1,6 @@
 import { test, expect } from '../src/fixtures/test.fixture';
 import { generateRandomEmail, generateRandomUsername } from '../src/utils/testDataGenerator';
+import { TIMEOUTS } from '../src/utils/timeouts';
 
 test.describe('Authentication', { tag: ['@auth'] }, () => {
   test.describe('Sign Up', () => {
@@ -16,12 +17,12 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
       await registerPage.register(username, email, password);
 
       // Verify success message is displayed
-      await expect(page.locator('.auth-page .success-messages')).toBeVisible();
+      await expect(registerPage.getSuccessMessagesLocator()).toBeVisible();
       const successMessage = await registerPage.getSuccessMessage();
       expect(successMessage).toContain('Registration successful');
 
       // Verify redirect to login page
-      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
       await expect(page).toHaveURL(/.*#\/login/);
     });
 
@@ -37,7 +38,7 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
 
       await registerPage.navigate();
       await registerPage.register(username1, email, password);
-      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
       // Try to register another user with the same email
       const username2 = generateRandomUsername('testuser');
@@ -45,7 +46,7 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
       await registerPage.register(username2, email, password);
 
       // Verify error message is displayed
-      await expect(page.locator('.auth-page .error-messages').first()).toBeVisible();
+      await expect(registerPage.getErrorMessagesLocator()).toBeVisible();
       const errorMessage = await registerPage.getErrorMessage();
       expect(errorMessage.toLowerCase()).toContain('email');
     });
@@ -65,7 +66,7 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
 
       await registerPage.navigate();
       await registerPage.register(username, email, password);
-      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
       // Now login with the registered user
       await loginPage.navigate();
@@ -93,7 +94,7 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
 
       await registerPage.navigate();
       await registerPage.register(username, email, password);
-      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
       // Try to login with wrong password
       await loginPage.navigate();
@@ -102,12 +103,12 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
       await loginPage.clickSignIn();
 
       // Verify error message is displayed
-      await expect(page.locator('.auth-page .error-messages').first()).toBeVisible();
+      await expect(loginPage.getErrorMessagesLocator()).toBeVisible();
       const errorMessage = await loginPage.getErrorMessage();
       expect(errorMessage.length).toBeGreaterThan(0);
     });
 
-    test('should not be able to login with non-existent email', async ({ page, loginPage }) => {
+    test('should not be able to login with non-existent email', async ({ loginPage }) => {
       const nonExistentEmail = generateRandomEmail('nonexistent');
 
       await loginPage.navigate();
@@ -116,7 +117,7 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
       await loginPage.clickSignIn();
 
       // Verify error message is displayed
-      await expect(page.locator('.auth-page .error-messages').first()).toBeVisible();
+      await expect(loginPage.getErrorMessagesLocator()).toBeVisible();
       const errorMessage = await loginPage.getErrorMessage();
       expect(errorMessage.length).toBeGreaterThan(0);
     });
@@ -136,11 +137,11 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
 
       await registerPage.navigate();
       await registerPage.register(username, email, password);
-      await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
       await loginPage.navigate();
       await loginPage.login(email, password);
-      await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.MEDIUM });
 
       // Verify user is logged in
       await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
@@ -152,7 +153,7 @@ test.describe('Authentication', { tag: ['@auth'] }, () => {
       await settingsPage.clickLogout();
 
       // Verify user is logged out - redirected to home page
-      await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+      await page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.MEDIUM });
 
       // Verify login/register links are visible (user is logged out)
       await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();

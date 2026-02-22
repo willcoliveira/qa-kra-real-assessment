@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Page } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
+import { TIMEOUTS } from './timeouts';
 
 const STORAGE_DIR = 'storage';
 const SESSION_MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes
@@ -53,7 +54,7 @@ export async function ensureAuthenticated(
   await loginPage.login(email, password);
 
   // Wait for navigation to complete
-  await page.waitForURL(/.*#\/$/, { timeout: 15000 });
+  await page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.LONG });
 
   // Save new session
   await page.context().storageState({ path: storagePath });

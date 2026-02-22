@@ -1,5 +1,6 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, test } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { TIMEOUTS } from '../utils/timeouts';
 
 export const selectors = {
   container: '.profile-page',
@@ -68,76 +69,108 @@ export class ProfilePage extends BasePage {
 
   // Actions
   async navigate(username: string): Promise<void> {
-    await super.navigate(`/profile/${username}`);
+    await test.step(`Navigate to profile "${username}"`, async () => {
+      await super.navigate(`/profile/${username}`);
+    });
   }
 
   async navigateToMyProfile(): Promise<void> {
-    await super.navigate('/my-profile');
+    await test.step('Navigate to my profile', async () => {
+      await super.navigate('/my-profile');
+    });
   }
 
   async getUsername(): Promise<string> {
-    return (await this.profileUsername().textContent()) ?? '';
+    return await test.step('Get profile username', async () => {
+      return (await this.profileUsername().textContent()) ?? '';
+    });
   }
 
   async getBio(): Promise<string> {
-    return (await this.profileBio().textContent()) ?? '';
+    return await test.step('Get profile bio', async () => {
+      return (await this.profileBio().textContent()) ?? '';
+    });
   }
 
   async clickFollow(): Promise<void> {
-    await this.followButton().click();
+    await test.step('Click follow button', async () => {
+      await this.followButton().click();
+    });
   }
 
   async clickUnfollow(): Promise<void> {
-    await this.unfollowButton().click();
+    await test.step('Click unfollow button', async () => {
+      await this.unfollowButton().click();
+    });
   }
 
   async isFollowButtonVisible(): Promise<boolean> {
-    return this.followButton().isVisible();
+    return await test.step('Check if follow button is visible', async () => {
+      return this.followButton().isVisible();
+    });
   }
 
   async isUnfollowButtonVisible(): Promise<boolean> {
-    return this.unfollowButton().isVisible();
+    return await test.step('Check if unfollow button is visible', async () => {
+      return this.unfollowButton().isVisible();
+    });
   }
 
   async clickEditProfile(): Promise<void> {
-    await this.editProfileButton().click();
+    await test.step('Click edit profile button', async () => {
+      await this.editProfileButton().click();
+    });
   }
 
   async clickMyArticlesTab(): Promise<void> {
-    await this.myArticlesTab().click();
+    await test.step('Click My Articles tab', async () => {
+      await this.myArticlesTab().click();
+    });
   }
 
   async clickFavoritedArticlesTab(): Promise<void> {
-    await this.favoritedArticlesTab().click();
+    await test.step('Click Favorited Articles tab', async () => {
+      await this.favoritedArticlesTab().click();
+    });
   }
 
   async getMyArticles(): Promise<string[]> {
-    // Wait for articles to load
-    await this.page
-      .locator(`${selectors.articlePreview}:has-text("Loading")`)
-      .waitFor({ state: 'hidden', timeout: 10000 })
-      .catch(() => {
-        // If no loading indicator, that's fine
-      });
-    return this.articlePreviewTitles().allTextContents();
+    return await test.step('Get my articles', async () => {
+      // Wait for articles to load
+      await this.page
+        .locator(`${selectors.articlePreview}:has-text("Loading")`)
+        .waitFor({ state: 'hidden', timeout: TIMEOUTS.MEDIUM })
+        .catch(() => {
+          // If no loading indicator, that's fine
+        });
+      return this.articlePreviewTitles().allTextContents();
+    });
   }
 
   async isArticleVisible(title: string): Promise<boolean> {
-    const article = this.page.locator(selectors.previewLink, { hasText: title });
-    return article.isVisible();
+    return await test.step(`Check if article "${title}" is visible`, async () => {
+      const article = this.page.locator(selectors.previewLink, { hasText: title });
+      return article.isVisible();
+    });
   }
 
   async clickArticleByTitle(title: string): Promise<void> {
-    await this.page.locator(selectors.previewLink, { hasText: title }).click();
+    await test.step(`Click article "${title}"`, async () => {
+      await this.page.locator(selectors.previewLink, { hasText: title }).click();
+    });
   }
 
   async waitForProfileLoaded(): Promise<void> {
-    await this.profileUsername().waitFor({ state: 'visible', timeout: 10000 });
+    await test.step('Wait for profile to load', async () => {
+      await this.profileUsername().waitFor({ state: 'visible', timeout: TIMEOUTS.MEDIUM });
+    });
   }
 
   async getArticleCount(): Promise<number> {
-    const previews = this.page.locator(`${selectors.articlePreview}:has(.preview-link)`);
-    return previews.count();
+    return await test.step('Get article count', async () => {
+      const previews = this.page.locator(`${selectors.articlePreview}:has(.preview-link)`);
+      return previews.count();
+    });
   }
 
   // Locator getters for assertions

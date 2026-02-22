@@ -1,5 +1,6 @@
 import { test, expect } from '../src/fixtures/test.fixture';
 import { ensureAuthenticated } from '../src/utils/auth.helper';
+import { TIMEOUTS } from '../src/utils/timeouts';
 import {
   generateRandomArticleTitle,
   generateRandomArticleDescription,
@@ -41,13 +42,13 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
     const registerPage = new RegisterPage(page);
     await registerPage.navigate();
     await registerPage.register(testUsername, testEmail, testPassword);
-    await page.waitForURL(/.*#\/login/, { timeout: 10000 });
+    await page.waitForURL(/.*#\/login/, { timeout: TIMEOUTS.MEDIUM });
 
     // Login
     const loginPage = new LoginPage(page);
     await loginPage.navigate();
     await loginPage.login(testEmail, testPassword);
-    await page.waitForURL(/.*#\/$/, { timeout: 10000 });
+    await page.waitForURL(/.*#\/$/, { timeout: TIMEOUTS.MEDIUM });
 
     // Create unique tag for testing
     uniqueTag = generateRandomTag('unique');
@@ -64,7 +65,7 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
     );
 
     // Wait for success message
-    await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+    await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
     // Verify article was created
     const profilePage = new ProfilePage(page);
@@ -84,7 +85,7 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
     );
 
     // Wait for success message
-    await expect(page.locator('.editor-page .success-messages')).toBeVisible();
+    await expect(editorPage.getSuccessMessagesLocator()).toBeVisible();
 
     // Verify second article was created
     await profilePage.navigate(testUsername);
@@ -100,7 +101,6 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
   });
 
   test('should be able to filter articles by clicking a tag in Global Feed', async ({
-    page,
     homePage,
   }) => {
     await homePage.navigate();
@@ -118,14 +118,13 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
     await homePage.clickTag(tagToFilter);
 
     // Wait for feed to update
-    await page.waitForTimeout(2000);
+    await homePage.waitForArticlesLoaded();
 
     // Verify a tag-specific feed tab appears
-    await expect(page.locator('.nav-link', { hasText: tagToFilter })).toBeVisible();
+    await expect(homePage.getTagFeedTab(tagToFilter)).toBeVisible();
   });
 
   test('should be able to verify only articles with selected tag are displayed', async ({
-    page,
     homePage,
   }) => {
     await homePage.navigate();
@@ -143,11 +142,11 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
     await homePage.clickTag(tagToFilter);
 
     // Wait for feed to update
-    await page.waitForTimeout(2000);
+    await homePage.waitForArticlesLoaded();
     await homePage.waitForArticlesLoaded();
 
     // Verify a tag-specific feed tab appears
-    await expect(page.locator('.nav-link', { hasText: tagToFilter })).toBeVisible();
+    await expect(homePage.getTagFeedTab(tagToFilter)).toBeVisible();
 
     // Get all articles in the filtered feed
     const articles = await homePage.getArticleTitles();
@@ -176,7 +175,6 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
   });
 
   test('should return to global feed when clicking Global Feed after tag filter', async ({
-    page,
     homePage,
   }) => {
     await homePage.navigate();
@@ -192,7 +190,7 @@ test.describe('Tag Filter', { tag: ['@tags'] }, () => {
 
     // Click on a tag to filter
     await homePage.clickTag(tagToFilter);
-    await page.waitForTimeout(2000);
+    await homePage.waitForArticlesLoaded();
 
     // Click on Global Feed again
     await homePage.clickGlobalFeed();
